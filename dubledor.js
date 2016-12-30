@@ -7,7 +7,7 @@ function PaintPole(pic, ctx, mas) {
 
     var n = mas.length;
 
-    var x, y, xp, yp, dx, dy;
+    var x, y, xp, yp, dx, dy,dcx,dcy;
     for (var i = 0; i < n; i++) {
         x = i % width;
         y = parseInt(i / width);
@@ -17,14 +17,18 @@ function PaintPole(pic, ctx, mas) {
 
         dx = pic.width / width;
         dy = pic.height / height;
+		
+		dcx = cs.width / width;
+        dcy = cs.height /(2* height);
+		
         if (mas[i].open)
-            ctx.drawImage(pic, xp * dx, yp * dy, dx, dy, x * dx, y * dy, dx, dy);
+            ctx.drawImage(pic, xp * dx, yp * dy, dx, dy, x * dcx, y * dcy, dcx, dcy);
         else {
             ctx.fillStyle = "rgb(0, 0,0)";
-            ctx.fillRect(x * dx, y * dy, dx, dy);
+            ctx.fillRect(x * dcx, y * dcy, dcx, dcy);
             ctx.lineWidth = 2;
             ctx.strokeStyle = "rgb(255, 0, 0)";
-            ctx.strokeRect(x * dx, y * dy, dx, dy);
+            ctx.strokeRect(x * dcx, y * dcy, dcx, dcy);
         }
 
     }
@@ -73,7 +77,7 @@ function openPic(){
 		if(pole.mas[i].open)nopen++;
 	}
 	if(nopen==pole.mas.length)
-		ctx.drawImage(pic,0,0);
+		ctx.drawImage(pic,0,0,cs.width,cs.height/2);
 }
 
 function Start() {
@@ -91,8 +95,9 @@ function Start() {
     ctx = cs.getContext('2d');
     pic = new Image();
     pic.onload = function() {
-        cs.width = pic.width;
-        cs.height = pic.height * 2;
+		var clheight=document.body.clientHeight*0.4;
+        cs.width = (clheight/pic.height)*pic.width;
+        cs.height = (clheight/pic.height)*pic.height * 2;
         PaintPole(pic, ctx, pole.mas);
     };
     pic.src = scheme;
