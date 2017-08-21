@@ -41,9 +41,11 @@ $headline=$num;
 //	echo $lines[$i]."\n";
 //}
 //вывод произвольной части с номером n
-
+$content="<table>";
 if(isset($p)){	
-	bar($p);
+	//bar($p);
+	barContent($p);	
+	$content=$content."</table>";
 	/*
 	$num+=$pagenum*($p-1);
 	for($i=$num;$i<count($lines);$i++){		
@@ -72,8 +74,8 @@ if(isset($p)){
 }
 if(isset($p)===false)
 		$end=count($lines);
-
-for($i=$num;$i<$end;$i++){
+echo $content;
+for($i=$num;$i<$end;$i++){	
 	echo $lines[$i]."\n";
 }
 //вывод подвала с пагинацией
@@ -85,6 +87,60 @@ for($j=1;$j<=$numpages;$j++){
 	else
 		echo "&nbsp&nbsp<a href=\"{$_SERVER['PHP_SELF']}?p={$j}&pagenum={$pagenum}&pageurl={$file}\">{$j}</a>"."&nbsp&nbsp";
 }
+//ф-ция с оглавлением
+function barContent($pa=0){
+	global $headline,$pagenum,$lines,$num,$end;
+	global $content,$file;
+	$j=0;
+	$num=$headline;
+	$end=$num;	
+	while(true){
+		$j++;		
+		$num=$end+1;
+		for($i=$num;$i<count($lines);$i++){		
+			$pos = strpos($lines[$i], "<p ");
+			if ($pos === false) {
+				continue;
+			}		
+			$num=$i;
+			
+			break;
+		}
+		
+		for($i=$num+$pagenum;$i<count($lines);$i++){
+			$pos = strpos($lines[$i], "<p ");
+			if ($pos === false) {
+				$end=$i;
+				continue;
+			}
+			$end=$i-1;
+			break;
+		}		
+		if(($num+$pagenum)>count($lines))
+			$end=count($lines);		
+
+		if($pa<0){
+			for($z=$num;$z<=$end;$z++){
+				$pos=strpos($lines[$z],"----------");//10
+				if ($pos === false) {				
+					continue;
+				}
+				else{
+					$content=$content."<tr><td><a href=\"{$_SERVER['PHP_SELF']}?p={$j}&pagenum={$pagenum}&pageurl={$file}\">{$j}</a>&nbsp&nbsp</td><td>".$lines[$z+2]."</td></tr>\n";
+				}
+			}
+		}
+		if($pa>0){
+			if($pa==$j)
+				break;
+		}
+		if($end>=count($lines)){			
+			break;			
+		}			
+	}
+	return $j;
+}
+//ф-ция без оглавления
 function bar($pa=0){
 	global $headline,$pagenum,$lines,$num,$end;
 	$j=0;
