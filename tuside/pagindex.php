@@ -1,6 +1,9 @@
 ﻿<?php
 $dir=$_SERVER['DOCUMENT_ROOT']."/"."filesupload/files/";
+$pageall=$_SERVER['HTTP_HOST']."/"."filesupload/files/";
 $file = $dir."picasa.html";
+
+//http://test1.ru/pagindex.php?p=8&pagenum=200&pageurl=Z:/home/test1.ru/www/filesupload/files/picasa.html&pageall=http://test1.ru/filesupload/files/picasa.html
 //echo  $file;
 $p=$_GET['p'];
 $pagenum=200;
@@ -8,8 +11,12 @@ if(isset($_GET['pagenum']))
 	$pagenum=$_GET['pagenum'];
 if(isset($_GET['pageurl']))
 	$file = $_GET['pageurl'];
+if(isset($_GET['pageall']))
+	$pageall=$_GET['pageall'];
+else
+	$pageall=$_SERVER['PHP_SELF']."?pagenum={$pagenum}&pageurl={$file}";
 echo "<h1>Страница № {$p}</h1>";
-//print_r($_GET);
+////print_r($_GET);
 //phpinfo(32);
 
 //$doc = new DOMDocument();
@@ -81,12 +88,22 @@ for($i=$num;$i<$end;$i++){
 //вывод подвала с пагинацией
 
 $numpages=bar();
+echo "<br><br>";
 for($j=1;$j<=$numpages;$j++){
 	if($p==$j)
 		echo "&nbsp&nbsp<a style=\"font-size:150%;\"href=\"{$_SERVER['PHP_SELF']}?p={$j}&pagenum={$pagenum}&pageurl={$file}\">{$j}</a>"."&nbsp&nbsp";
-	else
+	else{
+		//пагинация с отображением ближайщих страниц 5
+		if(abs($p-$j)>=5)
+			continue;
 		echo "&nbsp&nbsp<a href=\"{$_SERVER['PHP_SELF']}?p={$j}&pagenum={$pagenum}&pageurl={$file}\">{$j}</a>"."&nbsp&nbsp";
+	}
 }
+echo "<br><br>";
+echo "&nbsp&nbsp<a href=\"{$pageall}\">Целиком ({$numpages} стр.)</a>"."&nbsp&nbsp";
+$pagecontent=$_SERVER['PHP_SELF']."?p=-1&pagenum={$pagenum}&pageurl={$file}";
+echo "&nbsp&nbsp<a href=\"{$pagecontent}\">Содержание</a>"."&nbsp&nbsp";
+echo "<br><br>";
 //ф-ция с оглавлением
 function barContent($pa=0){
 	global $headline,$pagenum,$lines,$num,$end;
@@ -120,13 +137,29 @@ function barContent($pa=0){
 			$end=count($lines);		
 
 		if($pa<0){
-			for($z=$num;$z<=$end;$z++){
-				$pos=strpos($lines[$z],"----------");//10
+			$z=$num;
+			$l=$num;
+			//создание содержания заголовков h1
+			for(;$z<=$end;$z++){
+				$pos=strpos($lines[$z],"<h1>");//10
 				if ($pos === false) {				
 					continue;
 				}
 				else{
-					$content=$content."<tr><td><a href=\"{$_SERVER['PHP_SELF']}?p={$j}&pagenum={$pagenum}&pageurl={$file}\">{$j}</a>&nbsp&nbsp</td><td>".$lines[$z+2]."</td></tr>\n";
+					for($l=$z;$l<=$end;$l++){
+						$pos=strpos($lines[$l],"</h1>");//10
+						if ($pos === false) {				
+							continue;
+						}
+						break;		
+					}
+					$h1="";
+					for($u=$z;$u<=$l;$u++){
+						$h1=$h1.$lines[$u];	
+					}
+					$arrh1="";
+					preg_match("!<h1>(.*)</h1>!si",$h1,$arrh1);
+					$content=$content."<tr><td><a href=\"{$_SERVER['PHP_SELF']}?p={$j}&pagenum={$pagenum}&pageurl={$file}\">{$j}</a>&nbsp&nbsp</td><td>".$arrh1[1]."</td></tr>\n";
 				}
 			}
 		}
